@@ -1,0 +1,26 @@
+[versions]
+# Kotlin
+kotlin = "1.8.10"
+coroutine = "1.6.4"
+datetime = "0.4.0"
+
+# Test
+test-truth = "1.1.3"
+test-junit4 = "4.13.2"
+test-turbine = "0.9.0"
+test-mockk = "1.12.5"
+
+[libraries]
+# Kotlin
+kotlin-coroutine = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutine" }
+kotlin-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "datetime" }
+
+# Test
+test-truth = { group = "com.google.truth", name = "truth", version.ref = "test-truth" }
+test-junit4 = { group = "junit", name = "junit", version.ref = "test-junit4" }
+test-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "test-turbine" }
+test-mockk = { group = "io.mockk", name = "mockk", version.ref = "test-mockk" }
+test-kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+
+[bundles]
+test = ["test-truth", "test-junit4", "test-turbine", "test-mockk", "test-kotlin-test"]
