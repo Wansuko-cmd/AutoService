@@ -9,5 +9,5 @@ class AutoServiceProcessorProvider : SymbolProcessorProvider {
         AutoServiceProcessor(
             codeGenerator = environment.codeGenerator,
             logger = environment.logger,
-            )
+        )
 }
