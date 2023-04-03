@@ -6,5 +6,8 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 class AutoServiceProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
-        AutoServiceProcessor()
+        AutoServiceProcessor(
+            codeGenerator = environment.codeGenerator,
+            logger = environment.logger,
+            )
 }
