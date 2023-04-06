@@ -1,9 +1,8 @@
 package com.foo
 
 import annotation.AutoService
-import com.boo.BooService
 
-@AutoService(BooService::class)
-class FooServiceImpl1 : BooService {
+@AutoService(FooService::class)
+class FooServiceImpl1 : FooService {
     override fun doSomething() = println("FooServiceImpl1 do something.")
 }

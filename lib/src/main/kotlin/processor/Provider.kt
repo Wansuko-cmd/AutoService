@@ -8,7 +8,10 @@ import com.google.devtools.ksp.symbol.KSType
 
 class Providers : MutableMap<Parent, Provider> by HashMap() {
     fun setOrCreate(provider: Provider) {
-        val old = this.getOrPut(key = provider.parent) { provider }
+        val old = this.getOrElse(provider.parent) {
+            this[provider.parent] = provider
+            return@setOrCreate
+        }
         this[provider.parent] = Provider(
             parent = old.parent,
             children = old.children + provider.children,
