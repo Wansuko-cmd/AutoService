@@ -1,15 +1,9 @@
 import annotation.AutoService
+import com.sample.SampleService
+import com.sample.SampleServiceImpl1
+import com.sample.SampleServiceImpl2
 import java.util.ServiceLoader
 
 fun main(args: Array<String>) {
-    (ServiceLoader.load(MainService::class.java)).forEach(MainService::doSomething)
-}
-
-interface MainService {
-    fun doSomething()
-}
-
-@AutoService<MainService>(MainService::class)
-class MainServiceImpl1 : MainService {
-    override fun doSomething() = println("Impl1 do something.")
+    (ServiceLoader.load(SampleService::class.java)).forEach(SampleService::doSomething)
 }

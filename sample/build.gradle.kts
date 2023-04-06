@@ -7,6 +7,10 @@ repositories {
     mavenCentral()
 }
 
+ksp {
+    
+}
+
 dependencies {
     ksp(project(":lib"))
     implementation(project(":lib"))
