@@ -9,6 +9,8 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.validate
+import java.lang.RuntimeException
+import kotlin.math.log
 import kotlin.reflect.KClass
 
 class AutoServiceProcessor(
@@ -19,30 +21,47 @@ class AutoServiceProcessor(
     private val providers = Providers()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(AutoService::class.qualifiedName!!)
-        val (valid, invalid) = symbols.partition(KSAnnotated::validate)
+        try {
+            val symbols = resolver.getSymbolsWithAnnotation(AutoService::class.qualifiedName!!)
+            val (valid, invalid) = symbols.partition(KSAnnotated::validate)
 
-        valid.forEach { symbol -> providers.setOrCreate(Provider.create(symbol)) }
+            valid.forEach { symbol ->
+                val provider = Provider.create(symbol)
+                providers.setOrCreate(provider)
+            }
 
-        return invalid
+            return invalid
+        } catch (e: RuntimeException) {
+            logger.exception(e)
+            throw e
+        }
     }
 
     override fun finish() {
         super.finish()
-        providers.forEach { (_, provider) ->
-            codeGenerator.createNewFile(
-                Dependencies(false, *provider.sources.toTypedArray()),
-                META_INF_URL,
-                provider.parent.value,
-                "",
-            ).use { outputStream ->
-                outputStream.write(
-                    provider
-                        .children
-                        .joinToString("\n") { it.value }
-                        .toByteArray(),
-                )
+        try {
+            providers.forEach { (_, provider) ->
+
+                logger.info("provider interface: ${provider.parent}")
+                logger.info("provider implementer: ${provider.children}")
+
+                codeGenerator.createNewFile(
+                    Dependencies(false, *provider.sources.toTypedArray()),
+                    META_INF_URL,
+                    provider.parent.value,
+                    "",
+                ).use { outputStream ->
+                    outputStream.write(
+                        provider
+                            .children
+                            .joinToString("\n") { it.value }
+                            .toByteArray(),
+                    )
+                }
             }
+        } catch (e: RuntimeException) {
+            logger.exception(e)
+            throw e
         }
     }
 
