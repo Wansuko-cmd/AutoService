@@ -16,47 +16,37 @@ class AutoServiceProcessor(
     private val logger: KSPLogger,
 ) : SymbolProcessor {
 
-    private val providers = mutableMapOf<String, MutableSet<String>>()
-    private val sources = mutableSetOf<KSFile>()
+    private val providers = Providers()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(AutoService::class.qualifiedName!!)
         val (valid, invalid) = symbols.partition(KSAnnotated::validate)
 
-        valid.forEach { symbol ->
-            providers.getOrPut(symbol.getInterface(), ::mutableSetOf).add(symbol.getImplementer())
-            symbol.containingFile?.let { sources.add(it) }
-        }
+        valid.forEach { symbol -> providers.setOrCreate(Provider.create(symbol)) }
 
         return invalid
     }
 
     override fun finish() {
         super.finish()
-        providers.forEach { (inter, impl) ->
+        providers.forEach { (_, provider) ->
             codeGenerator.createNewFile(
-                Dependencies(true, *sources.toList().toTypedArray()),
-                "META-INF.services",
-                inter,
+                Dependencies(false, *provider.sources.toTypedArray()),
+                META_INF_URL,
+                provider.parent.value,
                 "",
-            ).use { it.write(impl.joinToString("\n").toByteArray()) }
+            ).use { outputStream ->
+                outputStream.write(
+                    provider
+                        .children
+                        .joinToString("\n") { it.value }
+                        .toByteArray(),
+                )
+            }
         }
     }
 
-    /**
-     * @AutoService(SampleService::class <- here)
-     * class SampleServiceImpl1 : SampleService
-     */
-    private fun KSAnnotated.getInterface(): String =
-        (this.annotations.first().arguments.first().value as KSType)
-            .declaration
-            .qualifiedName!!
-            .asString()
-
-    /**
-     * @AutoService(SampleService::class)
-     * class SampleServiceImpl1 <- here : SampleService
-     */
-    private fun KSAnnotated.getImplementer(): String =
-        (this as KSClassDeclaration).qualifiedName!!.asString()
+    companion object {
+        private const val META_INF_URL = "META-INF.services"
+    }
 }
